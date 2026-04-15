@@ -14,28 +14,43 @@ Parse `$ARGUMENTS` as position-independent keywords.
 
 **Known keywords:**
 - Size: `small`, `medium`, `large`
-- ELI5 trigger: `off`, `ask`, `auto`, `on` (require `eli5` keyword before them)
+- ELI5 trigger: `off`, `ask`, `auto`, `domain`, `on` (require `eli5` keyword before them)
 - ELI5 placement: `first`, `structural`, `every` (require `eli5` keyword before them)
+- Preset: `preset` followed by `dense`, `compact`, `teach`, `explain`
 - Reset: `default`
 
 Trigger and placement sets are disjoint — no ambiguity. Omitted tokens keep current value. Unknown tokens: ignore with brief note.
 
-**Compound commands valid:** `/nutshell:config-nut small eli5 on structural` → size=small, trigger=on, placement=structural.
+**Compound commands valid:** `/nutshell:config-nut small eli5 on structural` → size=small, trigger=on, placement=structural. `/nutshell:config-nut preset teach` → size=medium, trigger=auto, placement=structural.
 
 ## Activation
+
+### With Hooks (auto-activated)
+
+Nutshell is active from turn 1 via SessionStart hook — no command needed. Settings come from config files (see Config section). The hook creates a session flag file at `/tmp/nutshell-$CLAUDE_SESSION_ID` with the resolved settings.
+
+**`/nutshell:config-nut` when auto-activated** — settings/status command only. No activation flow.
+
+**Status echo:**
+`🥜 Compress: medium (default) 💬 ELI5: off 📐 Placement: structural`
+Size labels: `small (tightest)`, `medium (default)`, `large (roomiest)`.
+
+**Setting change** — confirm new settings with same emoji format:
+`🥜 Compress: small (tightest) 💬 ELI5: on 📐 Placement: structural`
+Mid-session changes apply to this session only (stored in session flag file, not written back to config).
+
+**Deactivation:** "stop nutshell" or "normal mode" deletes the session flag file. UserPromptSubmit checks this file — stops injecting when it's gone.
+
+**Reactivation:** "start nutshell" or re-invoking `/nutshell:config-nut` recreates the flag file with current config settings.
+
+**`/nutshell:config-nut default`** — reset to medium/off/structural for this session.
+
+### Without Hooks (manual)
 
 **First invocation** (no prior state): activate with defaults — size=medium, trigger=off, placement=structural. Confirm:
 `Nutshell active — 🥜 Compress: medium (default) 💬 ELI5: off 📐 Placement: structural`
 
-**Bare `/nutshell:config-nut` when already active** — status echo:
-`🥜 Compress: medium (default) 💬 ELI5: off 📐 Placement: structural`
-Size labels: `small (tightest)`, `medium (default)`, `large (roomiest)`.
-If settings differ from default, ask: adjust or keep current?
-
-**Setting change** — confirm new settings with same emoji format:
-`🥜 Compress: small (tightest) 💬 ELI5: on 📐 Placement: structural`
-
-**`/nutshell:config-nut default`** — reset to medium/off/structural.
+**Bare `/nutshell:config-nut` when already active** — status echo (same format as above). If settings differ from default, ask: adjust or keep current?
 
 **Persistence:** active every response until user says "stop nutshell" or "normal mode."
 
@@ -64,6 +79,49 @@ Default: `medium`. Switch via `/nutshell:config-nut small|medium|large`.
 **medium** — default. Fragments, no articles, compressed but readable.
 **small** — maximum density. Smallest nutshell. `DB migration → add index on user_id. Query time drops ~60%.`
 
+## Presets
+
+Named bundles that set size, trigger, and placement in one keyword. Syntax: `/nutshell:config-nut preset teach`.
+
+| Preset | Size | ELI5 Trigger | Placement | Use case |
+|--------|------|-------------|-----------|----------|
+| `dense` | small | off | structural | Maximum token savings. No explanations. |
+| `compact` | small | on | structural | Dense output with explanations for everything. |
+| `teach` | medium | auto | structural | Daily driver. Smart explanations when needed. |
+| `explain` | large | on | every | Learning mode. Full explanations everywhere. |
+
+Preset sets all three values at once. Subsequent manual changes override individual values — preset is a shorthand, not a lock. Example: `/nutshell:config-nut preset teach` then `/nutshell:config-nut small` → size=small, trigger=auto, placement=structural (only size changed).
+
+## Config
+
+Persistent settings via JSON config files. Two layers with deep merge.
+
+**Files:**
+- Global: `~/.claude/.nutshell.json` — applies to all sessions
+- Per-project: `.nutshell.json` in repo root — overrides global for that project
+
+**Schema:**
+
+```json
+{
+  "preset": "teach",
+  "size": "medium",
+  "eli5": {
+    "trigger": "auto",
+    "placement": "structural",
+    "domains": ["databases", "networking"]
+  }
+}
+```
+
+All fields optional. Omitted fields use defaults: size=medium, trigger=off, placement=structural, domains=[].
+
+**Resolution order:** preset defaults → global config fields → per-project config fields. Example: `{"preset": "teach", "size": "small"}` → teach defaults (medium/auto/structural) but size overridden to small → final: small/auto/structural.
+
+**Deep merge:** Per-project config merges into global via `jq -s '.[0] * .[1]'`. Scalar fields override. Arrays are **replaced entirely** — per-project `eli5.domains` replaces global `eli5.domains`, does not append. To add domains in a project, list all desired domains in the per-project file.
+
+**Validation:** Invalid enum values (unknown size, unknown trigger mode, unknown placement) silently fall back to defaults. Unknown keys are ignored.
+
 ## ELI5 Overlay
 
 Independent layer on top of compression. Two dimensions: **when** to show (trigger) and **where** to show (placement).
@@ -75,9 +133,15 @@ Independent layer on top of compression. Two dimensions: **when** to show (trigg
 | `off` | Default. No ELI5 lines. |
 | `ask` | Only when user says "eli5", "explain", "what does that mean." One response, then back to off. |
 | `auto` | Claude judges — add ELI5 when concept is non-obvious to a generalist developer. |
+| `domain` | ELI5 fires only for technical terms in user-configured domains (from the Domain Reference table below). |
 | `on` | Every response gets ELI5 lines. |
 
-Domain-triggered ELI5 (fire only for specific topic areas) requires config — deferred to Slice 2.
+### Domain Mode Rules
+
+- **Matching:** ELI5 fires when you *use or explain* a technical term listed in an active domain's row in the Domain Reference table. Tangential mentions or passing references do not trigger ELI5.
+- **Empty domains:** `trigger=domain` with `domains=[]` behaves like `trigger=off`. No domains selected = nothing triggers.
+- **Invalid domains:** Unknown domain names are silently ignored. If all specified domains are invalid, falls back to off.
+- **Config:** Set active domains in `~/.claude/.nutshell.json` under `eli5.domains`. Example: `"domains": ["databases", "networking"]`.
 
 Set via: `/nutshell:config-nut eli5 auto`, `/nutshell:config-nut eli5 on`.
 
@@ -264,9 +328,41 @@ If credentials are already committed, rotate them immediately — git history pr
 
 Config setup: add `DATABASE_URL` to CI secrets → reference as `$DATABASE_URL` in deploy script. Connection string format: `postgres://user:pass@host:5432/dbname`.
 
+### Domain Mode — Single Domain
+
+User: "How do I speed up this slow query? It's hitting the users table and the API returns a 504."
+**medium (ELI5 domain, domains=["databases"], structural):**
+
+Check query plan with `EXPLAIN ANALYZE`. Likely missing index on filtered columns. Add composite index if WHERE uses multiple columns.
+
+> 💬 Query plan = the database's step-by-step recipe. Without an index it reads every row — like searching a phonebook page by page.
+
+504 = gateway timeout. API waited too long for DB response. Fix query first — timeout resolves when query is fast.
+
+*(No ELI5 for 504/gateway timeout — networking terms, not in active domains.)*
+
+### Domain Mode — Multiple Domains
+
+User: "My app calls an external API, gets JSON back, and stores it. What's connection pooling and should I use an ORM?"
+**medium (ELI5 domain, domains=["databases", "networking"], structural):**
+
+**Connection pooling** — reuse DB connections instead of open/close per request. Essential for web apps. Most ORMs handle this.
+
+> 💬 Opening a DB connection is expensive — pooling keeps a few connections warm so requests grab one instantly instead of waiting.
+
+External API call goes over HTTP — connection pooling applies there too. Use `keep-alive` headers to reuse TCP connections.
+
+> 💬 Same idea for network calls — reusing an open line is faster than dialing a new number each time.
+
+**ORM** — maps DB rows to objects. Convenient but adds abstraction cost. For simple CRUD, saves time. For complex queries, raw SQL often better.
+
+> 💬 ORM lets you write `user.save()` instead of SQL — trades some control for convenience.
+
+*(Both database and networking terms get ELI5. Terms outside those domains — like JSON, CRUD — do not.)*
+
 ## Domain Reference
 
-Reference for ELI5 `auto` mode — terms in these domains are candidates for plain-language explanation. Domain-triggered mode (ELI5 only for selected categories) requires config (Slice 2).
+Reference for ELI5 `auto` and `domain` modes — terms in these domains are candidates for plain-language explanation. In `domain` mode, only terms from user-configured domains trigger ELI5 (set via `eli5.domains` in config).
 
 | Domain | Example terms |
 |--------|---------------|
