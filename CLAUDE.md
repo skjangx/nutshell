@@ -20,7 +20,7 @@ Future slices add: `hooks/hooks.json`, `presets/`, `skills/compress/`.
 
 ## Rules
 
-- **`skills/config/SKILL.md` is the single source of truth.** All compression rules, size levels, ELI5 logic, and examples live there. Do not duplicate rules elsewhere.
+- **`skills/config-nut/SKILL.md` is the single source of truth.** All compression rules, size levels, ELI5 logic, and examples live there. Do not duplicate rules elsewhere.
 - **Don't create files the current slice doesn't need.** No empty directories, no placeholder files, no stubs for future features.
 - **Worked examples in SKILL.md are high-leverage.** They're how Claude learns the style. Edit with care — bad examples train wrong behavior.
 - **Auto-clarity is a safety feature.** Never weaken the rule that drops compression for security warnings, irreversible actions, or confused users.
