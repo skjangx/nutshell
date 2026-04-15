@@ -1,5 +1,5 @@
 ---
-name: get-nutshell
+name: config
 description: "Token-efficient compressed output with optional ELI5 overlay"
 argument-hint: "[small|medium|large] [eli5 off|ask|auto|on] [eli5 first|structural|every]"
 ---
@@ -20,17 +20,22 @@ Parse `$ARGUMENTS` as position-independent keywords.
 
 Trigger and placement sets are disjoint — no ambiguity. Omitted tokens keep current value. Unknown tokens: ignore with brief note.
 
-**Compound commands valid:** `/get-nutshell small eli5 on structural` → size=small, trigger=on, placement=structural.
+**Compound commands valid:** `/nutshell:config small eli5 on structural` → size=small, trigger=on, placement=structural.
 
 ## Activation
 
-**First invocation** (no prior state): activate with defaults — size=medium, trigger=off, placement=structural. Confirm: `🥜 Nutshell active. medium · eli5 off · structural`
+**First invocation** (no prior state): activate with defaults — size=medium, trigger=off, placement=structural. Confirm:
+`Nutshell active — 🥜 Compress: medium (default) 💬 ELI5: off 📐 Placement: structural`
 
-**Bare `/get-nutshell` when already active** — status echo:
-`🥜 medium 💬 off 📐 structural`
+**Bare `/nutshell:config` when already active** — status echo:
+`🥜 Compress: medium (default) 💬 ELI5: off 📐 Placement: structural`
+Size labels: `small (tightest)`, `medium (default)`, `large (roomiest)`.
 If settings differ from default, ask: adjust or keep current?
 
-**`/get-nutshell default`** — reset to medium/off/structural.
+**Setting change** — confirm new settings with same emoji format:
+`🥜 Compress: small (tightest) 💬 ELI5: on 📐 Placement: structural`
+
+**`/nutshell:config default`** — reset to medium/off/structural.
 
 **Persistence:** active every response until user says "stop nutshell" or "normal mode."
 
@@ -47,7 +52,7 @@ Apply these every response while active:
 
 ## Size
 
-Default: `medium`. Switch via `/get-nutshell small|medium|large`.
+Default: `medium`. Switch via `/nutshell:config small|medium|large`.
 
 | Size | Style | ELI5 budget |
 |------|-------|-------------|
@@ -74,7 +79,7 @@ Independent layer on top of compression. Two dimensions: **when** to show (trigg
 
 Domain-triggered ELI5 (fire only for specific topic areas) requires config — deferred to Slice 2.
 
-Set via: `/get-nutshell eli5 auto`, `/get-nutshell eli5 on`.
+Set via: `/nutshell:config eli5 auto`, `/nutshell:config eli5 on`.
 
 ### Placement Modes
 
@@ -92,8 +97,8 @@ Set via: `/get-nutshell eli5 auto`, `/get-nutshell eli5 on`.
 - Debugging → per diagnosis
 - Prose → per paragraph
 
-Set via: `/get-nutshell eli5 structural`, `/get-nutshell eli5 every`.
-Compound: `/get-nutshell eli5 auto structural` sets both trigger and placement.
+Set via: `/nutshell:config eli5 structural`, `/nutshell:config eli5 every`.
+Compound: `/nutshell:config eli5 auto structural` sets both trigger and placement.
 
 ### Format
 
