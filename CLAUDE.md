@@ -13,13 +13,16 @@ Auto-activated via SessionStart hook when plugin is installed. `/nutshell:config
 ```
 .claude-plugin/plugin.json        — Plugin manifest (name, version, author)
 skills/config-nut/SKILL.md        — All compression rules, ELI5 overlay, examples (SINGLE SOURCE OF TRUTH)
+skills/compress/SKILL.md          — /nutshell:compress skill — compress .md prose via Python package, saves ~46% file size
+skills/compress/scripts/          — Python package: detect, compress, validate, retry loop (CLI-only call_claude, skip-and-reinject frontmatter, byte-exact backup)
+skills/compress/tests/fixtures/   — Committed fixtures for reproducible testing (prose-heavy, mixed, code-heavy)
 hooks/hooks.json                  — Hook manifest (SessionStart, UserPromptSubmit)
 hooks/session-start.sh            — Reads config, injects SKILL.md via additionalContext
 hooks/prompt-submit.sh            — Reinforces settings each prompt via systemMessage
 CLAUDE.md                         — This file (contributor guide)
 ```
 
-Future slices add: `presets/`, `skills/compress/`.
+Future slices add: `presets/`.
 
 ## Rules
 
