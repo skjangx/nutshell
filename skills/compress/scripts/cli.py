@@ -47,9 +47,6 @@ def main():
         print("Skipping: file is not natural language (code/config)")
         sys.exit(0)
 
-    print("Note: file contents are sent to the Anthropic API for compression.")
-    print()
-
     try:
         original_size = filepath.stat().st_size
     except OSError as e:

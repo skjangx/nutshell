@@ -342,6 +342,8 @@ def compress_file(filepath: Path) -> bool:
         backup_path.unlink(missing_ok=True)
         raise RuntimeError(f"Failed to write backup file: {e}")
 
+    print("Note: file contents are sent to the Anthropic API for compression.")
+    print()
     print("Compressing with Claude...")
     compressed_body = call_claude(build_compress_prompt(body))
     compressed_body = _maybe_inject_failure(compressed_body)
