@@ -6,13 +6,13 @@ Claude Code plugin for token-efficient compressed output with optional ELI5 over
 
 Nutshell teaches Claude to speak concisely — dropping filler, using fragments, keeping technical terms exact — while optionally adding plain-language explanations (`> 💬` blockquotes) for complex concepts. Three sizes (small/medium/large) and four ELI5 trigger modes (off/ask/auto/on).
 
-Activated via `/nutshell:config` in any Claude Code session. Not auto-injected — user must invoke per session (hooks come in Slice 2).
+Activated via `/nutshell:config-nut` in any Claude Code session. Not auto-injected — user must invoke per session (hooks come in Slice 2).
 
 ## File Structure
 
 ```
 .claude-plugin/plugin.json   — Plugin manifest (name, version, author)
-skills/config/SKILL.md       — All compression rules, ELI5 overlay, examples (SINGLE SOURCE OF TRUTH)
+skills/config-nut/SKILL.md   — All compression rules, ELI5 overlay, examples (SINGLE SOURCE OF TRUTH)
 CLAUDE.md                    — This file (contributor guide)
 ```
 
