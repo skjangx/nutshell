@@ -1,0 +1,26 @@
+{
+  "description": "Nutshell auto-activation and settings hooks",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh\""
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/prompt-submit.sh\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
