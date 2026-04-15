@@ -143,7 +143,7 @@ Independent layer on top of compression. Two dimensions: **when** to show (trigg
 - **Invalid domains:** Unknown domain names are silently ignored. If all specified domains are invalid, falls back to off.
 - **Config:** Set active domains in `~/.claude/.nutshell.json` under `eli5.domains`. Example: `"domains": ["databases", "networking"]`.
 
-Set via: `/nutshell:config-nut eli5 auto`, `/nutshell:config-nut eli5 on`.
+Set via: `/nutshell:config-nut eli5 auto`, `/nutshell:config-nut eli5 domain`, `/nutshell:config-nut eli5 on`.
 
 ### Placement Modes
 
