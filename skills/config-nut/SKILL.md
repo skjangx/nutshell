@@ -27,7 +27,7 @@ Trigger and placement sets are disjoint — no ambiguity. Omitted tokens keep cu
 
 ### With Hooks (auto-activated)
 
-Nutshell is active from turn 1 via SessionStart hook — no command needed. Settings come from config files (see Config section). The hook creates a session flag file at `/tmp/nutshell-$CLAUDE_SESSION_ID` with the resolved settings.
+Nutshell is active from turn 1 via SessionStart hook — no command needed. Settings come from config files (see Config section). The hook creates a session flag file at `/tmp/nutshell-{session_id}` with the resolved settings.
 
 **`/nutshell:config-nut` when auto-activated** — settings/status and reactivation command. No initial activation flow (hooks handle that).
 

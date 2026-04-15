@@ -4,8 +4,12 @@
 
 set -euo pipefail
 
+# --- Capture stdin JSON (contains session_id, consumed once) ---
+STDIN_JSON=$(cat)
+
 SKILL_PATH="${CLAUDE_PLUGIN_ROOT}/skills/config-nut/SKILL.md"
-FLAG_FILE="/tmp/nutshell-${CLAUDE_SESSION_ID:-unknown}"
+SESSION_ID=$(echo "$STDIN_JSON" | jq -r '.session_id // empty' 2>/dev/null || true)
+FLAG_FILE="/tmp/nutshell-${SESSION_ID:-unknown}"
 GLOBAL_CONFIG="${HOME}/.claude/.nutshell.json"
 PROJECT_CONFIG="${CLAUDE_PROJECT_DIR:-.}/.nutshell.json"
 

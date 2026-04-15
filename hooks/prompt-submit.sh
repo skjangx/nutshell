@@ -4,7 +4,10 @@
 
 set -euo pipefail
 
-FLAG_FILE="/tmp/nutshell-${CLAUDE_SESSION_ID:-unknown}"
+# --- Capture stdin JSON (contains session_id, consumed once) ---
+STDIN_JSON=$(cat)
+SESSION_ID=$(echo "$STDIN_JSON" | jq -r '.session_id // empty' 2>/dev/null || true)
+FLAG_FILE="/tmp/nutshell-${SESSION_ID:-unknown}"
 
 # --- Flag file missing = nutshell deactivated ---
 if [ ! -f "$FLAG_FILE" ]; then
