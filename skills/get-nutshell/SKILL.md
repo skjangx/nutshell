@@ -258,3 +258,22 @@ If credentials are already committed, rotate them immediately — git history pr
 *(Nutshell resumes after this warning.)*
 
 Config setup: add `DATABASE_URL` to CI secrets → reference as `$DATABASE_URL` in deploy script. Connection string format: `postgres://user:pass@host:5432/dbname`.
+
+## Domain Reference
+
+Reference for ELI5 `auto` mode — terms in these domains are candidates for plain-language explanation. Domain-triggered mode (ELI5 only for selected categories) requires config (Slice 2).
+
+| Domain | Example terms |
+|--------|---------------|
+| networking | TCP/UDP, DNS, CORS, TLS handshake, reverse proxy |
+| databases | B-tree, WAL, query plan, sharding, MVCC |
+| auth-security | OAuth, JWT, RBAC, CSRF, zero-trust |
+| devops | CI/CD, blue-green deploy, IaC, container orchestration |
+| systems | syscall, page fault, context switch, file descriptor, mmap |
+| distributed | CAP theorem, consensus, eventual consistency, vector clock |
+| compilers | AST, lexer, type inference, monomorphization, IR |
+| ml-ai | gradient descent, attention, embedding, fine-tuning, tokenizer |
+| frontend | virtual DOM, hydration, SSR/SSG, tree shaking, code splitting |
+| functional | monad, currying, algebraic data type, pattern matching, referential transparency |
+| cloud | VPC, IAM, Lambda cold start, S3 lifecycle, CDN edge |
+| git | rebase, cherry-pick, reflog, worktree, bisect |
