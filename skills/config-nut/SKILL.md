@@ -29,11 +29,12 @@ Trigger and placement sets are disjoint — no ambiguity. Omitted tokens keep cu
 
 Nutshell is active from turn 1 via SessionStart hook — no command needed. Settings come from config files (see Config section). The hook creates a session flag file at `/tmp/nutshell-$CLAUDE_SESSION_ID` with the resolved settings.
 
-**`/nutshell:config-nut` when auto-activated** — settings/status command only. No activation flow.
+**`/nutshell:config-nut` when auto-activated** — settings/status and reactivation command. No initial activation flow (hooks handle that).
 
 **Status echo:**
 `🥜 Compress: medium (default) 💬 ELI5: off 📐 Placement: structural`
 Size labels: `small (tightest)`, `medium (default)`, `large (roomiest)`.
+When trigger=domain, show active domains: `💬 ELI5: domain [databases, networking]`. If domains empty: `💬 ELI5: domain [none — behaves as off]`.
 
 **Setting change** — confirm new settings with same emoji format:
 `🥜 Compress: small (tightest) 💬 ELI5: on 📐 Placement: structural`
@@ -51,6 +52,12 @@ Mid-session changes apply to this session only (stored in session flag file, not
 `Nutshell active — 🥜 Compress: medium (default) 💬 ELI5: off 📐 Placement: structural`
 
 **Bare `/nutshell:config-nut` when already active** — status echo (same format as above). If settings differ from default, ask: adjust or keep current?
+
+**Invocation with args when inactive:** treat as first invocation with those settings. `/nutshell:config-nut small eli5 on` → activate at small/on/structural.
+
+**`/nutshell:config-nut default`** — reset to medium/off/structural.
+
+**Reactivation:** after "stop nutshell," re-invoke `/nutshell:config-nut` or say "start nutshell" to re-activate at defaults (or with provided args).
 
 **Persistence:** active every response until user says "stop nutshell" or "normal mode."
 
@@ -116,11 +123,11 @@ Persistent settings via JSON config files. Two layers with deep merge.
 
 All fields optional. Omitted fields use defaults: size=medium, trigger=off, placement=structural, domains=[].
 
-**Resolution order:** preset defaults → global config fields → per-project config fields. Example: `{"preset": "teach", "size": "small"}` → teach defaults (medium/auto/structural) but size overridden to small → final: small/auto/structural.
-
 **Deep merge:** Per-project config merges into global via `jq -s '.[0] * .[1]'`. Scalar fields override. Arrays are **replaced entirely** — per-project `eli5.domains` replaces global `eli5.domains`, does not append. To add domains in a project, list all desired domains in the per-project file.
 
-**Validation:** Invalid enum values (unknown size, unknown trigger mode, unknown placement) silently fall back to defaults. Unknown keys are ignored.
+**Resolution order:** Merge first, then resolve. Deep-merge global + per-project into one config, then apply: preset defaults → explicit fields in merged config. Example: global `{"size": "large"}` + per-project `{"preset": "dense"}` → merged `{"size": "large", "preset": "dense"}` → dense defaults (small/off/structural) then `size: "large"` overrides → final: large/off/structural.
+
+**Validation:** Invalid enum values (unknown size, unknown trigger mode, unknown placement) silently fall back to defaults. Invalid preset names are silently ignored (no preset defaults applied). Unknown keys are ignored.
 
 ## ELI5 Overlay
 
@@ -138,10 +145,10 @@ Independent layer on top of compression. Two dimensions: **when** to show (trigg
 
 ### Domain Mode Rules
 
-- **Matching:** ELI5 fires when you *use or explain* a technical term listed in an active domain's row in the Domain Reference table. Tangential mentions or passing references do not trigger ELI5.
+- **Matching:** ELI5 fires when you *use or explain* a technical term that belongs to an active domain's category. Use the Domain Reference table as guidance — it lists example terms, not an exhaustive set. Tangential mentions or passing references do not trigger ELI5.
 - **Empty domains:** `trigger=domain` with `domains=[]` behaves like `trigger=off`. No domains selected = nothing triggers.
 - **Invalid domains:** Unknown domain names are silently ignored. If all specified domains are invalid, falls back to off.
-- **Config:** Set active domains in `~/.claude/.nutshell.json` under `eli5.domains`. Example: `"domains": ["databases", "networking"]`.
+- **Config:** Set active domains under `eli5.domains` in config files (global or per-project — see Config section). Example: `"domains": ["databases", "networking"]`.
 
 Set via: `/nutshell:config-nut eli5 auto`, `/nutshell:config-nut eli5 domain`, `/nutshell:config-nut eli5 on`.
 
