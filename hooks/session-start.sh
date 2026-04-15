@@ -54,15 +54,29 @@ if [ -n "$DOMAINS" ]; then
 fi
 SETTINGS_MSG="${SETTINGS_MSG}."
 
-# --- Output additionalContext with SKILL.md + settings ---
-jq -n \
-  --arg skill "$(cat "$SKILL_PATH")" \
-  --arg settings "$SETTINGS_MSG" \
-  '{
-    hookSpecificOutput: {
-      hookEventName: "SessionStart",
-      additionalContext: ($skill + "\n\n" + $settings)
-    }
-  }'
+# --- Brief directive + tell model to read SKILL.md on first response ---
+# additionalContext has a ~2KB limit — can't inject full SKILL.md.
+# Model reads the file on first response, getting full rules into context.
+
+SKILL_ABS_PATH=$(cd "$(dirname "$SKILL_PATH")" && pwd)/$(basename "$SKILL_PATH")
+
+CONTEXT="NUTSHELL COMPRESSED OUTPUT MODE IS ACTIVE.
+
+On your very first response this session, silently read the full rules from:
+${SKILL_ABS_PATH}
+
+Apply those rules to EVERY response. Key points until you read the file:
+- Drop articles, filler, hedging. Fragments OK. Technical terms exact.
+- Code blocks and tool calls: never compress.
+- \"stop nutshell\" or \"normal mode\" to deactivate.
+
+${SETTINGS_MSG}"
+
+jq -n --arg ctx "$CONTEXT" '{
+  hookSpecificOutput: {
+    hookEventName: "SessionStart",
+    additionalContext: $ctx
+  }
+}'
 
 exit 0
