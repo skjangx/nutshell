@@ -4,19 +4,22 @@ Claude Code plugin for token-efficient compressed output with optional ELI5 over
 
 ## What This Is
 
-Nutshell teaches Claude to speak concisely — dropping filler, using fragments, keeping technical terms exact — while optionally adding plain-language explanations (`> 💬` blockquotes) for complex concepts. Three sizes (small/medium/large) and four ELI5 trigger modes (off/ask/auto/on).
+Nutshell teaches Claude to speak concisely — dropping filler, using fragments, keeping technical terms exact — while optionally adding plain-language explanations (`> 💬` blockquotes) for complex concepts. Three sizes (small/medium/large), five ELI5 trigger modes (off/ask/auto/domain/on), and four presets (dense/compact/teach/explain).
 
-Activated via `/nutshell:config-nut` in any Claude Code session. Not auto-injected — user must invoke per session (hooks come in Slice 2).
+Auto-activated via SessionStart hook when plugin is installed. `/nutshell:config-nut` is available for settings changes and status.
 
 ## File Structure
 
 ```
-.claude-plugin/plugin.json   — Plugin manifest (name, version, author)
-skills/config-nut/SKILL.md   — All compression rules, ELI5 overlay, examples (SINGLE SOURCE OF TRUTH)
-CLAUDE.md                    — This file (contributor guide)
+.claude-plugin/plugin.json        — Plugin manifest (name, version, author)
+skills/config-nut/SKILL.md        — All compression rules, ELI5 overlay, examples (SINGLE SOURCE OF TRUTH)
+hooks/hooks.json                  — Hook manifest (SessionStart, UserPromptSubmit)
+hooks/session-start.sh            — Reads config, injects SKILL.md via additionalContext
+hooks/prompt-submit.sh            — Reinforces settings each prompt via systemMessage
+CLAUDE.md                         — This file (contributor guide)
 ```
 
-Future slices add: `hooks/hooks.json`, `presets/`, `skills/compress/`.
+Future slices add: `presets/`, `skills/compress/`.
 
 ## Rules
 
@@ -24,3 +27,4 @@ Future slices add: `hooks/hooks.json`, `presets/`, `skills/compress/`.
 - **Don't create files the current slice doesn't need.** No empty directories, no placeholder files, no stubs for future features.
 - **Worked examples in SKILL.md are high-leverage.** They're how Claude learns the style. Edit with care — bad examples train wrong behavior.
 - **Auto-clarity is a safety feature.** Never weaken the rule that drops compression for security warnings, irreversible actions, or confused users.
+- **Hook scripts must use `$CLAUDE_PLUGIN_ROOT`** — never hardcode paths.

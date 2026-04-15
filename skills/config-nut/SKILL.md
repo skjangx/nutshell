@@ -1,7 +1,7 @@
 ---
 name: config-nut
 description: "Token-efficient compressed output with optional ELI5 overlay"
-argument-hint: "[small|medium|large] [eli5 off|ask|auto|on] [eli5 first|structural|every]"
+argument-hint: "[small|medium|large] [eli5 off|ask|auto|domain|on] [eli5 first|structural|every] [preset dense|compact|teach|explain]"
 ---
 
 # Nutshell
