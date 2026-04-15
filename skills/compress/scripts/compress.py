@@ -156,23 +156,34 @@ def call_claude(prompt: str) -> str:
         raise RuntimeError(f"Unexpected error calling claude: {type(e).__name__}: {e}")
 
 
+_inject_fired = False
+
+
 def _maybe_inject_failure(compressed: str) -> str:
     """Debug hook for deterministic retry-path testing.
 
-    If NUTSHELL_DEBUG_INJECT_FAIL is set in env, corrupt the compressed
-    output to force a specific validation failure. Enables Test 2 in the
-    manual test plan. Prints a loud warning to stderr so the corruption
-    mode is never silent (prevents confusion if the var is set by accident
-    in a shell or CI environment).
+    Env vars:
+      NUTSHELL_DEBUG_INJECT_FAIL = url | heading | codeblock
+        Corrupt the compressed output to force a specific validation failure.
+        Default: fires only on the initial compression (Test 2 — retry success).
+      NUTSHELL_DEBUG_INJECT_FAIL_ALWAYS = 1
+        Also inject on fix attempts, forcing MAX_RETRIES exhaustion
+        (Test 3 — restore-from-memory + backup cleanup path).
 
-    Values: 'url' (deletes first URL), 'heading' (rewords first heading),
-    'codeblock' (mangles first code block fence).
+    Prints a loud warning to stderr so the corruption mode is never silent
+    (prevents confusion if the var is set by accident in CI or a shell).
     """
+    global _inject_fired
     mode = os.environ.get("NUTSHELL_DEBUG_INJECT_FAIL", "")
     if not mode:
         return compressed
+    always = os.environ.get("NUTSHELL_DEBUG_INJECT_FAIL_ALWAYS") == "1"
+    if _inject_fired and not always:
+        return compressed
+    _inject_fired = True
     print(
-        f"WARNING: NUTSHELL_DEBUG_INJECT_FAIL={mode} is active - corrupting "
+        f"WARNING: NUTSHELL_DEBUG_INJECT_FAIL={mode}"
+        f"{' (persistent)' if always else ''} is active - corrupting "
         "compressed output to force a validation failure. This is a debug "
         "mode for testing the retry path; unset the env var for normal use.",
         file=sys.stderr,
@@ -388,6 +399,11 @@ def compress_file(filepath: Path) -> bool:
             compressed_body = call_claude(
                 build_fix_prompt(body, compressed_body, result.errors)
             )
+            # Re-apply debug corruption on fix output when
+            # NUTSHELL_DEBUG_INJECT_FAIL_ALWAYS=1. Otherwise Claude would
+            # undo the corruption using ORIGINAL in the fix prompt and the
+            # MAX_RETRIES exhaustion path would never be exercised during testing.
+            compressed_body = _maybe_inject_failure(compressed_body)
             compressed = frontmatter + compressed_body
             filepath.write_text(compressed, encoding="utf-8")
     except Exception:
