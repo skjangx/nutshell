@@ -388,6 +388,28 @@ TCP: reliable, ordered, connection-based. Handshake, flow control, retransmissio
 **small (ELI5 off):**
 TCP: reliable/ordered/connected. Handshake + retransmit. UDP: fire-and-forget. No guarantees. TCP → correctness (HTTP/files). UDP → speed (streaming/gaming/DNS).
 
+### Discussion/Decision Shape — Paired medium vs small
+
+These examples deliberately pair medium and small for the **same question** so the density contrast is visible. Discussion-shape questions (debugging, decisions, yes/no with caveats) tend to drift toward medium even when set to small — these examples anchor what small should look like in that shape.
+
+#### Q4: "Should I backfill the new column or make it nullable?"
+
+**medium (ELI5 off):**
+Two options. Backfill = guaranteed data integrity, slower deploy. Nullable + lazy backfill = fast deploy, defers the data-quality problem. Pick backfill if column matters to query logic; nullable if it's optional or derivable. Test backfill on staging snapshot first.
+
+**small (ELI5 off):**
+Two paths. Backfill → integrity, slow deploy. Nullable + lazy → fast, defers problem. Backfill if logic-critical. Nullable if optional. Test staging first.
+
+#### Q5: "Will exit + resume work after we changed the hooks?"
+
+**medium (ELI5 off):**
+Yes — resume re-fires SessionStart with the same session_id. New flag + pointer get created with current configs. Cleaner than full restart since conversation context is preserved.
+
+**small (ELI5 off):**
+Yes — same session_id. Re-fires SessionStart → new flag + pointer. Cleaner than restart, keeps context.
+
+**Note the contrast:** small drops "two options," "guaranteed," "deploy," qualifiers, and articles where medium kept them. Verbs reduce to arrows where causality is implied. If your small output reads like medium, you're undershooting — strip more.
+
 ### Ask Mode
 
 User: "What's CORS?"
