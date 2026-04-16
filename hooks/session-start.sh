@@ -74,7 +74,9 @@ Apply those rules to EVERY response. Key points until you read the file:
 - Code blocks and tool calls: never compress.
 - \"stop nutshell\" or \"normal mode\" to deactivate.
 
-${SETTINGS_MSG}"
+${SETTINGS_MSG}
+
+Available commands: /nutshell:config-nut (view/change settings), /nutshell:compress (compress markdown files)."
 
 jq -n --arg ctx "$CONTEXT" '{
   hookSpecificOutput: {
