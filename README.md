@@ -98,7 +98,7 @@ Fine-grain: `/nutshell:config-nut small eli5 auto structural`. See `/nutshell:co
 
 ```bash
 claude plugin marketplace add skjangx/nutshell
-claude plugin install nutshell@nutshell
+claude plugin install nutshell@acorn
 ```
 
 **Dev / local testing** (session-only, not a persistent install):
@@ -117,7 +117,7 @@ Restart your Claude Code session after installing — hooks load on session star
 ## Uninstall
 
 ```bash
-claude plugin uninstall nutshell@nutshell
+claude plugin uninstall nutshell@acorn
 ```
 
 To fully reset (also removes the first-run welcome marker so a future reinstall re-greets you):
