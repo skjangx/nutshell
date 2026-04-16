@@ -111,19 +111,9 @@ if [ -f "$FILTER_AWK" ] && [ -f "$SKILL_ABS_PATH" ]; then
 fi
 
 if [ -n "$FILTERED_RULES" ]; then
-  CONTEXT="NUTSHELL COMPRESSED OUTPUT MODE IS ACTIVE.
+  CONTEXT="NUTSHELL COMPRESSED OUTPUT MODE IS ACTIVE. Apply rules below to EVERY response. Full reference: ${SKILL_ABS_PATH}
 
-${SETTINGS_MSG}
-
-Apply the rules below to EVERY response. Full reference at: ${SKILL_ABS_PATH}
-
----
-
-${FILTERED_RULES}
-
----
-
-Available commands: /nutshell:config-nut (view/change settings), /nutshell:compress (compress markdown files)."
+${FILTERED_RULES}"
 else
   # Fallback: filter failed or file missing — fall back to the lightweight directive.
   CONTEXT="NUTSHELL COMPRESSED OUTPUT MODE IS ACTIVE.
