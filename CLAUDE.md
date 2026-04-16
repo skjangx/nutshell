@@ -22,8 +22,6 @@ hooks/prompt-submit.sh            — Reinforces settings each prompt via system
 CLAUDE.md                         — This file (contributor guide)
 ```
 
-Future slices add: `presets/`.
-
 ## Rules
 
 - **`skills/config-nut/SKILL.md` is the single source of truth.** All compression rules, size levels, ELI5 logic, and examples live there. Do not duplicate rules elsewhere.

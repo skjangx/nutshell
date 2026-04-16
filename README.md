@@ -108,7 +108,7 @@ claude --plugin-dir ./nutshell
 
 Restart your Claude Code session after installing — hooks load on session start.
 
-**First run:** Claude will welcome you once and point to `/nutshell:config-nut setup` for a guided 4-question wizard (preset or custom, scope, confirm).
+**First run:** Claude will welcome you once and point to `/nutshell:config-nut setup` for a guided 4-turn wizard (preset or custom → custom dials if needed → scope → confirm).
 
 ---
 
