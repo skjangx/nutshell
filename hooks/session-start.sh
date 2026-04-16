@@ -12,15 +12,23 @@ SESSION_ID=$(echo "$STDIN_JSON" | jq -r '.session_id // empty' 2>/dev/null || tr
 FLAG_FILE="/tmp/nutshell-${SESSION_ID:-unknown}"
 GLOBAL_CONFIG="${HOME}/.claude/.nutshell.json"
 PROJECT_CONFIG="${CLAUDE_PROJECT_DIR:-.}/.nutshell.json"
+INSTALL_MARKER="${HOME}/.claude/.nutshell-installed"
 
 # --- jq fallback ---
 if ! command -v jq &>/dev/null; then
   touch "$FLAG_FILE"
-  cat << 'FALLBACK'
+  NOJQ_CTX="Nutshell active (minimal mode — install jq for full features). Compressed output mode: drop filler, use fragments, keep technical terms exact. Size: medium. ELI5: auto. Placement: structural. Available commands: /nutshell:config-nut (view/change settings), /nutshell:compress (compress markdown files)."
+  if [ ! -f "$INSTALL_MARKER" ]; then
+    mkdir -p "$(dirname "$INSTALL_MARKER")"
+    touch "$INSTALL_MARKER"
+    NOJQ_CTX="${NOJQ_CTX} This is a fresh install. Welcome the user to nutshell and suggest /nutshell:config-nut setup to customize."
+  fi
+  # Output JSON without jq — string is known-safe (no quotes/backslashes)
+  cat << FALLBACK
 {
   "hookSpecificOutput": {
     "hookEventName": "SessionStart",
-    "additionalContext": "Nutshell active (minimal mode — install jq for full features). Compressed output mode: drop filler, use fragments, keep technical terms exact. Size: medium. ELI5: auto. Placement: structural."
+    "additionalContext": "${NOJQ_CTX}"
   }
 }
 FALLBACK
@@ -77,6 +85,15 @@ Apply those rules to EVERY response. Key points until you read the file:
 ${SETTINGS_MSG}
 
 Available commands: /nutshell:config-nut (view/change settings), /nutshell:compress (compress markdown files)."
+
+# --- First-run nudge (persistent marker) ---
+if [ ! -f "$INSTALL_MARKER" ]; then
+  mkdir -p "$(dirname "$INSTALL_MARKER")"
+  touch "$INSTALL_MARKER"
+  CONTEXT="${CONTEXT}
+
+This is a fresh install. Welcome the user to nutshell and suggest /nutshell:config-nut setup to customize their experience."
+fi
 
 jq -n --arg ctx "$CONTEXT" '{
   hookSpecificOutput: {
