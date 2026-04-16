@@ -1,7 +1,7 @@
 ---
 name: config-nut
 description: "Token-efficient compressed output with optional ELI5 overlay"
-argument-hint: "[small|medium|large] [eli5 off|ask|auto|domain|on] [eli5 first|structural|every] [preset dense|compact|teach|explain]"
+argument-hint: "[small|medium|large] [eli5 off|ask|auto|domain|on] [eli5 first|structural|every] [preset dense|compact|teach|explain] [setup]"
 ---
 
 # Nutshell
@@ -18,6 +18,7 @@ Parse `$ARGUMENTS` as position-independent keywords.
 - ELI5 placement: `first`, `structural`, `every` (require `eli5` keyword before them)
 - Preset: `preset` followed by `dense`, `compact`, `teach`, `explain`
 - Reset: `default`
+- Setup wizard: `setup`
 
 Trigger and placement sets are disjoint — no ambiguity. Omitted tokens keep current value. Unknown tokens: ignore with brief note.
 
@@ -128,6 +129,110 @@ All fields optional. Omitted fields use defaults: size=medium, trigger=auto, pla
 **Resolution order:** Merge first, then resolve. Deep-merge global + per-project into one config, then apply: preset defaults → explicit fields in merged config. Example: global `{"size": "large"}` + per-project `{"preset": "dense"}` → merged `{"size": "large", "preset": "dense"}` → dense defaults (small/off/structural) then `size: "large"` overrides → final: large/off/structural.
 
 **Validation:** Invalid enum values (unknown size, unknown trigger mode, unknown placement) silently fall back to defaults. Invalid preset names are silently ignored (no preset defaults applied). Unknown keys are ignored.
+
+## Setup Wizard
+
+Triggered by `/nutshell:config-nut setup`. Walks the user through configuration and writes a persistent JSON config file. This is NOT a session-only change — it writes to disk.
+
+When `setup` is detected in `$ARGUMENTS`, enter the wizard flow below instead of processing other keywords. Use AskUserQuestion for each turn.
+
+### Turn 1: Preset or Custom
+
+Present the presets:
+
+| Preset | What you get |
+|--------|-------------|
+| `dense` | Maximum compression, no explanations. For power users. |
+| `compact` | Dense output with explanations for everything. |
+| `teach` | Daily driver — smart explanations when needed. **(current default)** |
+| `explain` | Learning mode — full explanations everywhere. |
+
+Ask: **"Pick a preset, or go custom?"**
+Options: **dense** / **compact** / **teach** / **explain** / **Custom (set each dial individually)**
+
+If a preset is chosen → skip to Turn 3.
+If custom → continue to Turn 2.
+
+### Turn 2: Custom Dials (custom path only)
+
+Ask for each setting. Show the current default in parentheses.
+
+**Size:** small (tightest) / medium (default) / large (roomiest)
+**ELI5 trigger:** off / ask / auto (default) / domain / on
+
+**If trigger=domain is chosen:** present the domain categories from the Domain Reference table at the bottom of this file. Ask the user to select which domains they want ELI5 for. Use a multi-select. Without at least one domain selected, domain mode behaves like off — warn the user.
+
+**ELI5 placement:** first / structural (default) / every
+
+Present as a single AskUserQuestion with the three settings (or four if domain was chosen). Confirm the combined settings before proceeding.
+
+### Turn 3: Scope
+
+Ask: **"Save globally or for this project only?"**
+Options:
+- **Global** (`~/.claude/.nutshell.json`) — applies to all sessions and projects
+- **This project** (`${CLAUDE_PROJECT_DIR}/.nutshell.json`) — overrides global for this repo only
+
+If **This project** is chosen:
+- Determine the project config path: use `$CLAUDE_PROJECT_DIR` if set, otherwise fall back to `git rev-parse --show-toplevel`, otherwise use current working directory. Warn the user if falling back.
+- Suggest: "Consider adding `.nutshell.json` to your project's `.gitignore` to keep personal preferences out of version control."
+
+### Turn 4: Confirm and Write
+
+Show a summary of the chosen settings:
+```
+Your nutshell config:
+  Preset: teach (or "custom")
+  Size: medium
+  ELI5 trigger: auto
+  ELI5 placement: structural
+  Scope: global (~/.claude/.nutshell.json)
+```
+
+Ask: **"Write this config?"** Options: **Yes, save it** / **Go back and adjust**
+
+On confirm, write the config file:
+
+**With jq (preferred):** Use `jq -n` with `--arg` for all values — never string-interpolate user values into the jq filter.
+
+For a preset config:
+```bash
+mkdir -p "$(dirname "$CONFIG_PATH")" && jq -n --arg preset "$PRESET" '{"preset": $preset}' > "$CONFIG_PATH"
+```
+
+For a custom config (example with domain trigger):
+```bash
+mkdir -p "$(dirname "$CONFIG_PATH")" && jq -n \
+  --arg size "$SIZE" \
+  --arg trigger "$TRIGGER" \
+  --arg placement "$PLACEMENT" \
+  --argjson domains "$DOMAINS_JSON" \
+  '{size: $size, eli5: {trigger: $trigger, placement: $placement, domains: $domains}}' > "$CONFIG_PATH"
+```
+
+Where `$DOMAINS_JSON` is a JSON array like `'["databases","networking"]'`.
+
+**Without jq (fallback):** If jq is not available, only offer preset configs (no custom path — freeform strings in heredocs risk malformed JSON). Write via:
+```bash
+mkdir -p "$(dirname "$CONFIG_PATH")" && cat > "$CONFIG_PATH" << 'EOF'
+{"preset": "teach"}
+EOF
+```
+
+Tell the user: "Custom config requires jq. Install jq (`brew install jq` / `apt install jq`) and re-run setup for individual dial control."
+
+After writing, confirm: **"Config saved to {path}. Changes take effect on next session start."**
+
+### Re-run Behavior
+
+If the wizard detects an existing config file at the **target path** (the scope chosen in Turn 3 — NOT the merged effective config):
+1. Read and display the existing file's settings
+2. Ask: **"Update these settings or start fresh?"**
+   - **Update** → pre-fill current values as defaults in Turn 1/2
+   - **Start fresh** → proceed with default values as if no config exists
+3. On write, overwrite the target file (no backup — config files are small and git-tracked or easily recreated)
+
+**Important:** Read the target file directly, not the merged global+project config. This prevents accidentally writing project-scoped overrides back into the global file.
 
 ## ELI5 Overlay
 
