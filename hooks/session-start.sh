@@ -96,13 +96,37 @@ if [ -n "$DOMAINS" ]; then
 fi
 SETTINGS_MSG="${SETTINGS_MSG}."
 
-# --- Brief directive + tell model to read SKILL.md on first response ---
-# additionalContext has a ~2KB limit — can't inject full SKILL.md.
-# Model reads the file on first response, getting full rules into context.
-
+# --- Inject filtered SKILL.md as additionalContext ---
+# Heavier than just "read this path" but bounded (~4KB per size/trigger/placement).
+# Caveman pattern: keep core rules + active-only table rows + auto-clarity + boundaries
+# + paired examples. Anchors behavior so model doesn't drift after context compression.
 SKILL_ABS_PATH=$(cd "$(dirname "$SKILL_PATH")" && pwd)/$(basename "$SKILL_PATH")
+FILTER_AWK="${CLAUDE_PLUGIN_ROOT}/hooks/filter-rules.awk"
 
-CONTEXT="NUTSHELL COMPRESSED OUTPUT MODE IS ACTIVE.
+FILTERED_RULES=""
+if [ -f "$FILTER_AWK" ] && [ -f "$SKILL_ABS_PATH" ]; then
+  FILTERED_RULES=$(awk \
+    -v SIZE="$SIZE" -v TRIGGER="$TRIGGER" -v PLACEMENT="$PLACEMENT" \
+    -f "$FILTER_AWK" "$SKILL_ABS_PATH" 2>/dev/null || true)
+fi
+
+if [ -n "$FILTERED_RULES" ]; then
+  CONTEXT="NUTSHELL COMPRESSED OUTPUT MODE IS ACTIVE.
+
+${SETTINGS_MSG}
+
+Apply the rules below to EVERY response. Full reference at: ${SKILL_ABS_PATH}
+
+---
+
+${FILTERED_RULES}
+
+---
+
+Available commands: /nutshell:config-nut (view/change settings), /nutshell:compress (compress markdown files)."
+else
+  # Fallback: filter failed or file missing — fall back to the lightweight directive.
+  CONTEXT="NUTSHELL COMPRESSED OUTPUT MODE IS ACTIVE.
 
 On your very first response this session, silently read the full rules from:
 ${SKILL_ABS_PATH}
@@ -115,6 +139,7 @@ Apply those rules to EVERY response. Key points until you read the file:
 ${SETTINGS_MSG}
 
 Available commands: /nutshell:config-nut (view/change settings), /nutshell:compress (compress markdown files)."
+fi
 
 # --- First-run nudge (persistent marker) ---
 # Marker write is best-effort — failure degrades to no nudge, not a crash
