@@ -19,6 +19,8 @@
 
 ## What it is
 
+*"In a nutshell"* — that's the whole idea.
+
 Nutshell is a Claude Code plugin that teaches Claude to speak concisely — dropping filler, using fragments, keeping technical terms exact — while (optionally) adding plain-language blockquotes when jargon shows up.
 
 Four presets: **dense** (max compression), **compact** (dense + always-on ELI5), **teach** (default — medium + auto ELI5), **explain** (full ELI5 everywhere). One command to switch.
