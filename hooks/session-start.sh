@@ -19,8 +19,7 @@ if ! command -v jq &>/dev/null; then
   touch "$FLAG_FILE"
   NOJQ_CTX="Nutshell active (minimal mode — install jq for full features). Compressed output mode: drop filler, use fragments, keep technical terms exact. Size: medium. ELI5: auto. Placement: structural. Available commands: /nutshell:config-nut (view/change settings), /nutshell:compress (compress markdown files)."
   if [ ! -f "$INSTALL_MARKER" ]; then
-    mkdir -p "$(dirname "$INSTALL_MARKER")"
-    touch "$INSTALL_MARKER"
+    mkdir -p "$(dirname "$INSTALL_MARKER")" 2>/dev/null && touch "$INSTALL_MARKER" 2>/dev/null || true
     NOJQ_CTX="${NOJQ_CTX} This is a fresh install. Welcome the user to nutshell and suggest /nutshell:config-nut setup to customize."
   fi
   # Output JSON without jq — string is known-safe (no quotes/backslashes)
@@ -87,9 +86,9 @@ ${SETTINGS_MSG}
 Available commands: /nutshell:config-nut (view/change settings), /nutshell:compress (compress markdown files)."
 
 # --- First-run nudge (persistent marker) ---
+# Marker write is best-effort — failure degrades to no nudge, not a crash
 if [ ! -f "$INSTALL_MARKER" ]; then
-  mkdir -p "$(dirname "$INSTALL_MARKER")"
-  touch "$INSTALL_MARKER"
+  mkdir -p "$(dirname "$INSTALL_MARKER")" 2>/dev/null && touch "$INSTALL_MARKER" 2>/dev/null || true
   CONTEXT="${CONTEXT}
 
 This is a fresh install. Welcome the user to nutshell and suggest /nutshell:config-nut setup to customize their experience."
