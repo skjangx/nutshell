@@ -41,6 +41,29 @@ When trigger=domain, show active domains: `💬 ELI5: domain [databases, network
 `🥜 Compress: small (tightest) 💬 ELI5: on 📐 Placement: structural`
 Mid-session changes apply to this session only (stored in session flag file, not written back to config).
 
+**Persisting mid-session changes (REQUIRED for hooks mode):** the UserPromptSubmit hook re-reads the session flag file every turn, so any setting change must rewrite that file or the hook will revert your change next prompt. After confirming the new settings, run:
+
+```bash
+CWD_KEY="${CLAUDE_PROJECT_DIR:-$PWD}"
+if command -v shasum &>/dev/null; then
+  CWD_HASH=$(printf '%s' "$CWD_KEY" | shasum -a 256 | cut -c1-16)
+elif command -v sha256sum &>/dev/null; then
+  CWD_HASH=$(printf '%s' "$CWD_KEY" | sha256sum | cut -c1-16)
+else
+  CWD_HASH=$(printf '%s' "$CWD_KEY" | tr '/' '_' | tr -cd '[:alnum:]_-' | cut -c1-32)
+fi
+SID="${CLAUDE_SESSION_ID:-$(cat "${HOME}/.claude/.nutshell-pointers/${CWD_HASH}" 2>/dev/null)}"
+if [ -n "$SID" ]; then
+  FLAG="/tmp/nutshell-${SID}"
+else
+  FLAG=$(ls -t /tmp/nutshell-* 2>/dev/null | head -1)
+fi
+jq -n --arg size "SIZE_VALUE" --arg trigger "TRIGGER_VALUE" --arg placement "PLACEMENT_VALUE" --argjson domains 'DOMAINS_JSON_ARRAY' \
+  '{size: $size, eli5: {trigger: $trigger, placement: $placement, domains: $domains}}' > "$FLAG"
+```
+
+Substitute the resolved values (after preset expansion) for `SIZE_VALUE`, `TRIGGER_VALUE`, `PLACEMENT_VALUE`, and `DOMAINS_JSON_ARRAY` (e.g. `'[]'` or `'["databases"]'`). The per-cwd pointer at `~/.claude/.nutshell-pointers/<cwd-hash>` is written by SessionStart so the skill can locate this session's flag file. If `jq` is unavailable, skip the rewrite and tell the user the change is one-turn only. If `$FLAG` is empty (no flag exists, no pointer), the session is in deactivated state — start a new Claude Code session to re-arm hooks.
+
 **Deactivation:** "stop nutshell" or "normal mode" deletes the session flag file. UserPromptSubmit checks this file — stops injecting when it's gone.
 
 **Reactivation:** "start nutshell" or re-invoking `/nutshell:config-nut` recreates the flag file with current config settings.

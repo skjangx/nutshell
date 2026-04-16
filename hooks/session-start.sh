@@ -14,6 +14,20 @@ GLOBAL_CONFIG="${HOME}/.claude/.nutshell.json"
 PROJECT_CONFIG="${CLAUDE_PROJECT_DIR:-.}/.nutshell.json"
 INSTALL_MARKER="${HOME}/.claude/.nutshell-installed"
 
+# --- Per-cwd session pointer (so skill can find session_id without env var) ---
+# CLAUDE_SESSION_ID isn't exposed to bash; pointer lets the config-nut skill
+# locate this session's flag file when it needs to rewrite settings mid-session.
+POINTER_DIR="${HOME}/.claude/.nutshell-pointers"
+CWD_KEY="${CLAUDE_PROJECT_DIR:-$PWD}"
+if command -v shasum &>/dev/null; then
+  CWD_HASH=$(printf '%s' "$CWD_KEY" | shasum -a 256 | cut -c1-16)
+elif command -v sha256sum &>/dev/null; then
+  CWD_HASH=$(printf '%s' "$CWD_KEY" | sha256sum | cut -c1-16)
+else
+  CWD_HASH=$(printf '%s' "$CWD_KEY" | tr '/' '_' | tr -cd '[:alnum:]_-' | cut -c1-32)
+fi
+POINTER_FILE="${POINTER_DIR}/${CWD_HASH}"
+
 # --- jq fallback ---
 if ! command -v jq &>/dev/null; then
   touch "$FLAG_FILE"
@@ -53,10 +67,27 @@ esac
 SIZE=$(echo "$MERGED" | jq -r --arg def "$P_SIZE" '.size // $def')
 TRIGGER=$(echo "$MERGED" | jq -r --arg def "$P_TRIGGER" '.eli5.trigger // $def')
 PLACEMENT=$(echo "$MERGED" | jq -r --arg def "$P_PLACEMENT" '.eli5.placement // $def')
-DOMAINS=$(echo "$MERGED" | jq -r '.eli5.domains // [] | join(", ")')
+DOMAINS_JSON=$(echo "$MERGED" | jq '.eli5.domains // []')
+DOMAINS=$(echo "$DOMAINS_JSON" | jq -r 'join(", ")')
 
-# --- Create session flag file with settings ---
-echo "$MERGED" > "$FLAG_FILE"
+# --- Purge stale flag files (>7 days) ---
+find /tmp -maxdepth 1 -name 'nutshell-*' -type f -mtime +7 -delete 2>/dev/null || true
+
+# --- Write RESOLVED settings to flag file (not raw merged config) ---
+# prompt-submit.sh reads these literal fields — preset must be expanded here.
+jq -n \
+  --arg size "$SIZE" \
+  --arg trigger "$TRIGGER" \
+  --arg placement "$PLACEMENT" \
+  --argjson domains "$DOMAINS_JSON" \
+  '{size: $size, eli5: {trigger: $trigger, placement: $placement, domains: $domains}}' \
+  > "$FLAG_FILE"
+
+# --- Write per-cwd session pointer (best-effort) ---
+if [ -n "$SESSION_ID" ]; then
+  mkdir -p "$POINTER_DIR" 2>/dev/null && \
+    echo "$SESSION_ID" > "$POINTER_FILE" 2>/dev/null || true
+fi
 
 # --- Build settings summary ---
 SETTINGS_MSG="Nutshell is active. Current settings: size=${SIZE}, eli5 trigger=${TRIGGER}, placement=${PLACEMENT}"
