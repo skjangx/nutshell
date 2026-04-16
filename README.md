@@ -1,11 +1,3 @@
-# 🌰 Acorn
-
-Small, sharp tools for Claude Code. Growing over time.
-
-Currently shipping:
-
----
-
 ```
                 ,;;;,
                ;;;;;;;
@@ -19,13 +11,15 @@ Currently shipping:
         /     \
 ```
 
-## 🐿️🥜 Nutshell
+# 🐿️🥜 Nutshell
 
 **Token-efficient Claude Code. Compress prose, keep the signal. Drop a nut where it helps.**
 
+*Part of the 🌰 [acorn](https://github.com/skjangx/acorn) marketplace.*
+
 ---
 
-### What it is
+## What it is
 
 *"In a nutshell"* — that's the whole idea.
 
@@ -37,9 +31,9 @@ Code, commands, and tool calls are never compressed. Compression drops automatic
 
 ---
 
-### Demos
+## Demos
 
-#### 🐿️ Debugging — `dense`
+### 🐿️ Debugging — `dense`
 
 > **You:** My jest test fails with `Cannot find module './utils'`
 
@@ -54,7 +48,7 @@ Code, commands, and tool calls are never compressed. Compression drops automatic
 
 ---
 
-#### 🥜 Concept — `teach` (default)
+### 🥜 Concept — `teach` (default)
 
 > **You:** What's a React Server Component?
 
@@ -66,7 +60,7 @@ Code, commands, and tool calls are never compressed. Compression drops automatic
 
 ---
 
-#### 🌰 Learning — `explain`
+### 🌰 Learning — `explain`
 
 > **You:** Walk me through adding a database index
 
@@ -86,7 +80,7 @@ Code, commands, and tool calls are never compressed. Compression drops automatic
 
 ---
 
-### Presets
+## Presets
 
 | Preset | Size | ELI5 | Placement | When |
 |--------|------|------|-----------|------|
@@ -100,9 +94,9 @@ Fine-grain: `/nutshell:config-nut small eli5 auto structural`. See `/nutshell:co
 
 ---
 
-### Install
+## Install
 
-**Recommended** (GitHub, two commands):
+**Recommended** (via the acorn marketplace):
 
 ```bash
 claude plugin marketplace add skjangx/acorn
@@ -112,8 +106,8 @@ claude plugin install nutshell@acorn
 **Dev / local testing** (session-only, not a persistent install):
 
 ```bash
-git clone https://github.com/skjangx/acorn
-claude --plugin-dir ./acorn/nutshell
+git clone https://github.com/skjangx/nutshell
+claude --plugin-dir ./nutshell
 ```
 
 Restart your Claude Code session after installing — hooks load on session start.
@@ -122,7 +116,7 @@ Restart your Claude Code session after installing — hooks load on session star
 
 ---
 
-### Uninstall
+## Uninstall
 
 ```bash
 claude plugin uninstall nutshell@acorn
@@ -137,7 +131,7 @@ rm ~/.claude/.nutshell.json          # if you ran setup globally
 
 ---
 
-### Bonus: `/nutshell:compress`
+## Bonus: `/nutshell:compress`
 
 Crush existing markdown files in-place. Prose-heavy docs typically shrink ~46% with technical accuracy preserved.
 
@@ -149,7 +143,7 @@ Code blocks, commands, and frontmatter are passed through untouched. Files over 
 
 ---
 
-### Troubleshooting
+## Troubleshooting
 
 - **Nutshell isn't activating.** Check the hook fired: `cat /tmp/nutshell-$SESSION_ID` should exist after session start. Restart your session if you just installed.
 - **Output conflicts with another style plugin.** Nutshell and other output-rewriting plugins can fight. Disable the other, or narrow nutshell to per-project scope.
@@ -157,10 +151,10 @@ Code blocks, commands, and frontmatter are passed through untouched. Files over 
 
 ---
 
-### Scope
+## Scope
 
 Claude Code only for v0.1.0. No Cursor, Windsurf, or Codex support yet.
 
-### License
+## License
 
 MIT. See [`LICENSE`](./LICENSE).
