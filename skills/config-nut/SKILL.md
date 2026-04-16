@@ -104,7 +104,7 @@ Default: `medium`. Switch via `/nutshell:config-nut small|medium|large`.
 |------|-------|-------------|
 | `large` | Remove filler/hedging. Keep articles + full sentences. Professional tight. | ~15 words |
 | `medium` | Drop articles. Fragments OK. Short synonyms. Classic nutshell. | ~15 words |
-| `small` | Abbreviate (DB/auth/config/fn/req/res). Strip conjunctions. Arrows (→) for causality. | ~25 words |
+| `small` | Abbreviate (DB/auth/config/fn/req/res/impl). Strip conjunctions. Arrows (→) for causality. One word when one word enough. | ~25 words |
 
 **large** — still reads like polished English. No fragments. Biggest nutshell.
 **medium** — default. Fragments, no articles, compressed but readable.

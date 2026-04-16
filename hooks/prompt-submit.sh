@@ -24,7 +24,7 @@ if command -v jq &>/dev/null; then
   # --- Per-size directive (imperative, anchors compression behavior) ---
   case "$SIZE" in
     small)
-      MSG="Nutshell active (small). Drop articles/filler/hedging. Arrows for causality. Abbreviate (DB/auth/config/fn). Fragments preferred. Code/commits/security: normal."
+      MSG="Nutshell active (small). Drop articles/filler/hedging. Arrows for causality. Abbreviate (DB/auth/config/fn/impl). One word when one word enough. Fragments preferred. Code/commits/security: normal."
       ;;
     large)
       MSG="Nutshell active (large). Drop filler/hedging. Keep articles + full sentences. Code/commits/security: normal."
