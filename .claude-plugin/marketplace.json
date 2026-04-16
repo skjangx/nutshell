@@ -10,7 +10,7 @@
     {
       "name": "nutshell",
       "description": "Compressed output with optional ELI5 explainer lines.",
-      "source": "./",
+      "source": "./nutshell",
       "category": "productivity"
     }
   ]

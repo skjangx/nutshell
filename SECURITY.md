@@ -30,7 +30,7 @@ These run before the file body leaves your machine. If any fails, no subprocess 
 
 - **Size limit:** 250 KB (`MAX_FILE_SIZE = 250_000`). Larger files are refused up-front. (The fix/retry prompt embeds both original and compressed body — 250 KB keeps the combined payload manageable.)
 - **Symlink refusal:** leaf symlinks are refused outright. Ancestor-directory symlinks targeting a known-sensitive path are caught via the resolved-path check. **Residual gap:** an ancestor symlink into a non-sensitive directory that contains an innocuous-named file is not caught — the filename heuristic limitation (below) applies there too.
-- **Sensitive-path denylist** — source of truth is `skills/compress/scripts/compress.py`. Includes (non-exhaustive summary):
+- **Sensitive-path denylist** — source of truth is `nutshell/skills/compress/scripts/compress.py`. Includes (non-exhaustive summary):
   - Private directories: `~/.ssh/`, `~/.aws/`, `~/.gnupg/`, `~/.kube/`, `~/.docker/`
   - Credential filename patterns: `.env` (and `.env.*` suffixes), `credentials`, `secrets`, `id_rsa`/`id_dsa`/`id_ecdsa`/`id_ed25519` (and `.bak`/`.old`/`.backup`/`.pub` variants), `authorized_keys`, `known_hosts`, `.netrc`
   - Cert/key extensions: `*.pem`, `*.key`, `*.crt`, `*.cer`, `*.p12`, `*.pfx`, `*.jks`, `*.keystore`, `*.asc`, `*.gpg`

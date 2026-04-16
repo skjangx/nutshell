@@ -97,15 +97,15 @@ Fine-grain: `/nutshell:config-nut small eli5 auto structural`. See `/nutshell:co
 **Recommended** (GitHub, two commands):
 
 ```bash
-claude plugin marketplace add skjangx/nutshell
+claude plugin marketplace add skjangx/acorn
 claude plugin install nutshell@acorn
 ```
 
 **Dev / local testing** (session-only, not a persistent install):
 
 ```bash
-git clone https://github.com/skjangx/nutshell
-claude --plugin-dir ./nutshell
+git clone https://github.com/skjangx/acorn
+claude --plugin-dir ./acorn/nutshell
 ```
 
 Restart your Claude Code session after installing — hooks load on session start.
