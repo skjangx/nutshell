@@ -153,7 +153,7 @@ Code blocks, commands, and frontmatter are passed through untouched. Files over 
 
 ## Scope
 
-Claude Code only for v0.1.0. No Cursor, Windsurf, or Codex support yet.
+Claude Code only for v0.2.0. No Cursor, Windsurf, or Codex support yet.
 
 ## License
 

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.0 — 2026-04-16
+
+Adherence and reliability improvements.
+
+- Fix preset configuration not being applied per-turn
+- Add session cleanup hook and per-cwd session pointer for reliable mid-session changes
+- Strengthen per-prompt reinforcement with imperative directives per active mode
+- Inject filtered ruleset at session start to anchor compression style and prevent drift
+- Tighten the maximum-density mode with new abbreviations and guidance
+- Add side-by-side example outputs comparing two compression levels
+
 ## 0.1.0 — 2026-04-16
 
 Initial release.
