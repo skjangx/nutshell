@@ -17,7 +17,7 @@ fi
 # --- Read settings from flag file ---
 if command -v jq &>/dev/null; then
   SIZE=$(jq -r '.size // "medium"' "$FLAG_FILE" 2>/dev/null || echo "medium")
-  TRIGGER=$(jq -r '.eli5.trigger // "off"' "$FLAG_FILE" 2>/dev/null || echo "off")
+  TRIGGER=$(jq -r '.eli5.trigger // "auto"' "$FLAG_FILE" 2>/dev/null || echo "auto")
   PLACEMENT=$(jq -r '.eli5.placement // "structural"' "$FLAG_FILE" 2>/dev/null || echo "structural")
   DOMAINS=$(jq -r '.eli5.domains // [] | join(", ")' "$FLAG_FILE" 2>/dev/null || echo "")
 
@@ -39,7 +39,7 @@ else
 {
   "hookSpecificOutput": {
     "hookEventName": "UserPromptSubmit",
-    "systemMessage": "Nutshell active: size=medium, eli5=off, placement=structural."
+    "systemMessage": "Nutshell active: size=medium, eli5=auto, placement=structural."
   }
 }
 NOJQ

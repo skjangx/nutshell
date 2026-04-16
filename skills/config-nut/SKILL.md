@@ -32,7 +32,7 @@ Nutshell is active from turn 1 via SessionStart hook — no command needed. Sett
 **`/nutshell:config-nut` when auto-activated** — settings/status and reactivation command. No initial activation flow (hooks handle that).
 
 **Status echo:**
-`🥜 Compress: medium (default) 💬 ELI5: off 📐 Placement: structural`
+`🥜 Compress: medium (default) 💬 ELI5: auto (default) 📐 Placement: structural`
 Size labels: `small (tightest)`, `medium (default)`, `large (roomiest)`.
 When trigger=domain, show active domains: `💬 ELI5: domain [databases, networking]`. If domains empty: `💬 ELI5: domain [none — behaves as off]`.
 
@@ -44,18 +44,18 @@ Mid-session changes apply to this session only (stored in session flag file, not
 
 **Reactivation:** "start nutshell" or re-invoking `/nutshell:config-nut` recreates the flag file with current config settings.
 
-**`/nutshell:config-nut default`** — reset to medium/off/structural for this session.
+**`/nutshell:config-nut default`** — reset to medium/auto/structural for this session.
 
 ### Without Hooks (manual)
 
-**First invocation** (no prior state): activate with defaults — size=medium, trigger=off, placement=structural. Confirm:
-`Nutshell active — 🥜 Compress: medium (default) 💬 ELI5: off 📐 Placement: structural`
+**First invocation** (no prior state): activate with defaults — size=medium, trigger=auto, placement=structural. Confirm:
+`Nutshell active — 🥜 Compress: medium (default) 💬 ELI5: auto (default) 📐 Placement: structural`
 
 **Bare `/nutshell:config-nut` when already active** — status echo (same format as above). If settings differ from default, ask: adjust or keep current?
 
 **Invocation with args when inactive:** treat as first invocation with those settings. `/nutshell:config-nut small eli5 on` → activate at small/on/structural.
 
-**`/nutshell:config-nut default`** — reset to medium/off/structural.
+**`/nutshell:config-nut default`** — reset to medium/auto/structural.
 
 **Reactivation:** after "stop nutshell," re-invoke `/nutshell:config-nut` or say "start nutshell" to re-activate at defaults (or with provided args).
 
@@ -121,7 +121,7 @@ Persistent settings via JSON config files. Two layers with deep merge.
 }
 ```
 
-All fields optional. Omitted fields use defaults: size=medium, trigger=off, placement=structural, domains=[].
+All fields optional. Omitted fields use defaults: size=medium, trigger=auto, placement=structural, domains=[].
 
 **Deep merge:** Per-project config merges into global via `jq -s '.[0] * .[1]'`. Scalar fields override. Arrays are **replaced entirely** — per-project `eli5.domains` replaces global `eli5.domains`, does not append. To add domains in a project, list all desired domains in the per-project file.
 
@@ -137,9 +137,9 @@ Independent layer on top of compression. Two dimensions: **when** to show (trigg
 
 | Mode | Behavior |
 |------|----------|
-| `off` | Default. No ELI5 lines. |
+| `off` | No ELI5 lines. |
 | `ask` | Only when user says "eli5", "explain", "what does that mean." One response, then back to off. |
-| `auto` | Claude judges — add ELI5 when concept is non-obvious to a generalist developer. |
+| `auto` | Default. Claude judges — add ELI5 when concept is non-obvious to a generalist developer. |
 | `domain` | ELI5 fires only for technical terms in user-configured domains (from the Domain Reference table below). |
 | `on` | Every response gets ELI5 lines. |
 

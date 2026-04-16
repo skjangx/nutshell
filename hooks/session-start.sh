@@ -20,7 +20,7 @@ if ! command -v jq &>/dev/null; then
 {
   "hookSpecificOutput": {
     "hookEventName": "SessionStart",
-    "additionalContext": "Nutshell active (minimal mode — install jq for full features). Compressed output mode: drop filler, use fragments, keep technical terms exact. Size: medium. ELI5: off. Placement: structural."
+    "additionalContext": "Nutshell active (minimal mode — install jq for full features). Compressed output mode: drop filler, use fragments, keep technical terms exact. Size: medium. ELI5: auto. Placement: structural."
   }
 }
 FALLBACK
@@ -39,7 +39,7 @@ case "$PRESET" in
   compact) P_SIZE=small;  P_TRIGGER=on;   P_PLACEMENT=structural ;;
   teach)   P_SIZE=medium; P_TRIGGER=auto; P_PLACEMENT=structural ;;
   explain) P_SIZE=large;  P_TRIGGER=on;   P_PLACEMENT=every ;;
-  *)       P_SIZE=medium; P_TRIGGER=off;  P_PLACEMENT=structural ;;
+  *)       P_SIZE=medium; P_TRIGGER=auto; P_PLACEMENT=structural ;;
 esac
 
 # --- Extract settings (explicit fields override preset defaults) ---
